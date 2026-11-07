@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Happy Diwali, My Love ✨</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      user-select: none;
+    }
+    body {
+      overflow: hidden;
+      background: radial-gradient(circle at bottom, #1a0b2e 0%, #05020a 100%);
+      font-family: 'Poppins', sans-serif, system-ui;
+      color: #fff;
+    }
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 1;
+    }
+    /* Floating UI Overlay */
+    .ui-container {
+      position: fixed;
+      z-index: 10;
+      bottom: 25px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      pointer-events: none;
+    }
+    .message-card {
+      background: rgba(25, 10, 40, 0.75);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 215, 0, 0.4);
+      padding: 16px 28px;
+      border-radius: 20px;
+      text-align: center;
+      box-shadow: 0 8px 32px rgba(255, 170, 0, 0.2);
+      pointer-events: auto;
+      max-width: 90vw;
+      transition: all 0.3s ease;
+    }
+    .couple-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #ffd166;
+      text-shadow: 0 0 10px rgba(255, 209, 102, 0.6);
+      margin-bottom: 4px;
+    }
+    .sweet-quote {
+      font-size: 0.95rem;
+      color: #ffe8d6;
+    }
+    .action-btn {
+      background: linear-gradient(135deg, #ff7b00, #ff0055);
+      border: none;
+      color: #fff;
+      padding: 8px 20px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 8px;
+      box-shadow: 0 4px 15px rgba(255, 0, 85, 0.4);
+      transition: transform 0.2s;
+    }
+    .action-btn:hover {
+      transform: scale(1.05);
+    }
+    /* Sparkler Trail cursor hint */
+    .hint {
+      position: fixed;
+      top: 20px;
+      width: 100%;
+      text-align: center;
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.85rem;
+      z-index: 10;
+      letter-spacing: 1px;
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+
+  <div class="hint">✨ Screen par click karein ya mouse ghumayein fireworks & sparklers ke liye ✨</div>
+
+  <div class="ui-container">
+    <div class="message-card">
+      <div class="couple-title" id="namesTitle">Cutie &amp; Kuchupuchu 💖</div>
+      <div class="sweet-quote" id="quoteText">"You light up my entire world. Happy Diwali!" 🪔</div>
+      <button class="action-btn" id="nextBtn" onclick="nextMessage()">See Next ✨</button>
+    </div>
+  </div>
+
+  <canvas id="fireworksCanvas"></canvas>
+
+  <script>
+    // --- 1. Three.js Background & Diyas ---
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    // Warm ambient and point lights
+    const ambientLight = new THREE.AmbientLight(0xffecd2, 0.4);
+    scene.add(ambientLight);
+
+    const warmLight = new THREE.PointLight(0xffa500, 2, 50);
+    warmLight.position.set(0, 2, 5);
+    scene.add(warmLight);
+
+    // Create a 3D Glowing Diya Base
+    const diyaGroup = new THREE.Group();
+    const diyaGeo = new THREE.CylinderGeometry(1.4, 0.6, 0.5, 32);
+    const diyaMat = new THREE.MeshStandardMaterial({ color: 0x8b3a12, roughness: 0.6 });
+    const diyaBase = new THREE.Mesh(diyaGeo, diyaMat);
+    diyaGroup.add(diyaBase);
+
+    // Diya Flame (Glowing Sphere / Cone)
+    const flameGeo = new THREE.ConeGeometry(0.25, 0.8, 16);
+    const flameMat = new THREE.MeshBasicMaterial({ color: 0xffdd44 });
+    const flame = new THREE.Mesh(flameGeo, flameMat);
+    flame.position.y = 0.5;
+    diyaGroup.add(flame);
+
+    diyaGroup.position.set(0, -1.8, 0);
+    scene.add(diyaGroup);
+
+    camera.position.z = 6;
+
+    // --- 2. Interactive Sparkler Particle Trail ---
+    const particlesCount = 300;
+    const posArray = new Float32Array(particlesCount * 3);
+    for (let i = 0; i < particlesCount * 3; i++) {
+      posArray[i] = (Math.random() - 0.5) * 10;
+    }
+    const particlesGeo = new THREE.BufferGeometry();
+    particlesGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+    const particlesMat = new THREE.PointsMaterial({
+      size: 0.05,
+      color: 0xffdf78,
+      transparent: true,
+      blending
